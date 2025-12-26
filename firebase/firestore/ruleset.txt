@@ -64,6 +64,14 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // "Ich hab Bock" readiness flags: per-user document toggled by themselves
+    match /bock/{userId} {
+      allow read: if isApproved();
+      // Users can create/update/delete their own readiness flag; admin can manage all
+      allow create: if isApproved() && userId == request.auth.uid;
+      allow update, delete: if (isApproved() && userId == request.auth.uid) || isAdmin();
+    }
+
     // Timetable entries: admin-only writes, approved users read
     match /timetable/{entryId} {
       allow read: if isApproved();

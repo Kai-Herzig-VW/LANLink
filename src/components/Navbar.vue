@@ -12,6 +12,7 @@
       <ul :class="['nav-links', {open: menuOpen}]">
         <li><router-link to="/" active-class="active" @click="closeMenu">Home</router-link></li>
         <li><router-link to="/games" active-class="active" @click="closeMenu">Games</router-link></li>
+        <li><router-link to="/bock" active-class="active" @click="closeMenu">Ich hab Bock</router-link></li>
         <li v-if="userProfile?.isAdmin"><router-link to="/admin" active-class="active" @click="closeMenu">Admin</router-link></li>
         <li><button class="logout-btn" @click="handleLogout">Logout</button></li>
       </ul>
