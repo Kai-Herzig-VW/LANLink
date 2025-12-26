@@ -3,6 +3,7 @@ import { watchEffect } from 'vue';
 import { useRouter } from 'vue-router';
 import Navbar from './components/Navbar.vue';
 import AuthForm from './components/AuthForm.vue';
+import PauseAlarm from './components/PauseAlarm.vue';
 import { useAuth } from './composables/useAuth';
 const { user, userProfile } = useAuth();
 const router = useRouter();
@@ -22,6 +23,7 @@ watchEffect(() => {
 
 <template>
   <div>
+    <PauseAlarm />
     <div class="fixed-header">
       <header v-if="user && userProfile && userProfile.approved">
         <img src="/lanlink-logo.png" alt="LANLink Logo" class="main-logo" />
