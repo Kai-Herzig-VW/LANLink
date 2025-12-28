@@ -11,7 +11,7 @@
         <span class="game-title-animated now-playing-orange">{{ currentGameTitle }}</span>
       </span>
       <span v-else class="game-title paused">
-        <template v-if="pauseEnd && new Date(pauseEnd) < new Date()">
+        <template v-if="pauseEnd && new Date(pauseEnd) < now">
           Break until {{ new Date(pauseEnd).toLocaleString() }} is overdue
         </template>
         <template v-else>
@@ -87,7 +87,7 @@ async function handleClearCurrentGameAndPause() {
     pauseMsg.value = 'Error clearing values.';
   }
 }
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, onUnmounted } from 'vue';
 import { useGames } from '../composables/useGames';
 import { useStatus } from '../composables/useStatus';
 import { usePause } from '../composables/usePause';
@@ -108,6 +108,18 @@ async function setCurrentGame(gameId) {
   }
 }
 const { pauseEnd, isPaused, subscribe: subscribePause, setPauseEnd, clearPause } = usePause();
+
+// Add a reactive 'now' variable for live updates
+const now = ref(new Date());
+let nowInterval = null;
+onMounted(() => {
+  nowInterval = setInterval(() => {
+    now.value = new Date();
+  }, 1000);
+});
+onUnmounted(() => {
+  if (nowInterval) clearInterval(nowInterval);
+});
 const { userProfile, user } = useAuth();
 
 const pauseInput = ref("");

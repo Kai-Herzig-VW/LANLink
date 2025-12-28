@@ -11,7 +11,8 @@ export function usePause() {
     unsub = onSnapshot(doc(db, 'partyStatus', 'current'), (snap) => {
       const s = snap.data() || {};
       pauseEnd.value = s.pauseEnd || null;
-      isPaused.value = !!s.pauseEnd && (!s.pauseEnd || new Date(s.pauseEnd) > new Date());
+      // isPaused is true whenever pauseEnd is set (regardless of whether it's in the past or future)
+      isPaused.value = !!s.pauseEnd;
     });
   }
 
