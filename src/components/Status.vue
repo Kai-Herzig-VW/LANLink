@@ -20,7 +20,7 @@
       </span>
     </div>
 
-    <div class="card status-card ready-players-glass">
+    <div class="current-game-glass ready-players-glass">
       <span class="playing-active-text">
         <span class="ready-badge">
           <span class="ready-icon">⚡</span>
@@ -247,18 +247,9 @@ function openPauseBox() {
 
 <style scoped>
     .ready-players-glass {
-      background: #232b3b;
-      border-radius: 18px;
-      padding: 18px 24px;
-      margin-top: 1.5em;
-      margin-bottom: 1.5em;
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      min-height: 64px;
-      position: relative;
-      z-index: 1;
-      justify-content: flex-start;
+      /* Inherit all styles from .current-game-glass for perfect alignment */
+      margin-bottom: 2.5em;
+      margin-top: 0;
     }
   .ready-users-box {
     margin-top: 1em;
