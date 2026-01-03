@@ -32,6 +32,7 @@
             <!-- <th>Platform</th> -->
             <th>Votes</th>
             <th>Installed by</th>
+             <th>Ready Players</th>
             <th>Vote</th>
             <th>Installed</th>
             <th v-if="userProfile?.isAdmin">Actions</th>
@@ -51,6 +52,12 @@
               </span>
               <span v-else style="color:#6b7280;">—</span>
             </td>
+             <td class="g-ready-players">
+               <span v-if="readyPlayersForGame(g).length" class="ready-list">
+                 <span v-for="user in readyPlayersForGame(g)" :key="user.id" class="pill pill-green">{{ user.displayName || user.email || user.id }}</span>
+               </span>
+               <span v-else style="color:#6b7280;">—</span>
+             </td>
             <td class="g-vote-btn" style="position:relative;">
               <button
                 v-if="!hasVoted(g)"
@@ -93,12 +100,14 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useUsers } from '../composables/useUsers';
 
 
 import { useGames } from '../composables/useGames';
 import { useAuth } from '../composables/useAuth';
 
 const { games, installedGameIds, subscribe, addGame, deleteGame, voteForGame, removeVoteForGame, markAsInstalled, unmarkAsInstalled } = useGames();
+const { users, subscribe: subscribeUsers } = useUsers();
 import { db } from '../firebase';
 import { doc, updateDoc, setDoc } from 'firebase/firestore';
 const { user, userProfile } = useAuth();
@@ -131,6 +140,33 @@ const addMsg = ref('');
 const showAddGame = ref(false);
 
 onMounted(() => subscribe());
+onMounted(() => subscribeUsers());
+// Helper to get ready players for a game (readytoplayat within 1 hour)
+function readyPlayersForGame(game) {
+  const nowMs = Date.now();
+  if (!users.value || !Array.isArray(users.value)) return [];
+  return users.value.filter(u => {
+    // Only users who are ready
+    const ts = u.readyToPlayAt;
+    if (!ts) return false;
+    let readyTime;
+    if (typeof ts?.toMillis === 'function') {
+      readyTime = ts.toMillis();
+    } else if (typeof ts === 'object' && typeof ts.seconds === 'number') {
+      readyTime = ts.seconds * 1000 + Math.floor((ts.nanoseconds || 0) / 1e6);
+    } else if (typeof ts === 'number') {
+      readyTime = ts;
+    } else if (typeof ts === 'string') {
+      readyTime = Date.parse(ts);
+    } else {
+      return false;
+    }
+    // Only if ready within last hour
+    if (nowMs - readyTime > 3600000) return false;
+    // Only if user has this game installed
+    return game.installedByUsers && game.installedByUsers.some(inst => inst.id === u.id);
+  });
+}
 
 async function onAddGame() {
   addMsg.value = '';
@@ -189,6 +225,22 @@ onMounted(() => subscribe());
 
 
 <style scoped>
+.pill-green {
+  background: #22c55e;
+  color: #fff;
+  border-radius: 12px;
+  padding: 0.25em 0.9em;
+  font-size: 1em;
+  font-weight: 500;
+  margin-right: 0.3em;
+  display: inline-block;
+}
+.g-ready-players {
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .global-vote-error-popup {
   position: fixed;
   top: 50%;
