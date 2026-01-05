@@ -15,7 +15,15 @@
             Max Players
             <input v-model.number="newMaxPlayers" class="form-input" type="number" min="1" placeholder="Max players" />
           </label>
-          <!-- Platform selection removed -->
+          <label class="form-label">
+            Subscriptions
+            <div class="platform-checkboxes">
+              <label v-for="platform in availablePlatforms" :key="platform" class="checkbox-label">
+                <input type="checkbox" :value="platform" v-model="newPlatforms" />
+                {{ platform }}
+              </label>
+            </div>
+          </label>
           <div class="form-actions">
             <button class="form-submit" type="submit">Add Game</button>
             <button class="form-submit danger" type="button" @click="cancelAddGame">Cancel</button>
@@ -35,6 +43,7 @@
               Max Players
               <span v-if="sortBy==='maxPlayers'">{{ sortDir==='asc' ? '▲' : '▼' }}</span>
             </th>
+            <th>Subscriptions</th>
             <th @click="toggleSort('votesCount')" style="cursor:pointer;">
               Votes
               <span v-if="sortBy==='votesCount'">{{ sortDir==='asc' ? '▲' : '▼' }}</span>
@@ -55,9 +64,9 @@
           <tr v-for="g in sortedGames" :key="g.id">
             <td class="g-title">{{ g.title }}</td>
             <td class="g-max">{{ g.maxPlayers || '?' }}</td>
-            <!-- <td class="g-platforms">
-              <span v-for="p in g.platforms || []" :key="p" class="pill">{{ p }}</span>
-            </td> -->
+            <td class="g-platforms" style="display: flex; flex-direction: column; gap: 0.3em;">
+              <span v-for="p in g.platforms || []" :key="p" class="pill" style="white-space: normal; max-width: none; width: fit-content;">{{ p }}</span>
+            </td>
             <td class="g-votes">{{ g.votesCount }}</td>
             <td class="g-vote-btn" style="position:relative;">
               <button
@@ -159,7 +168,15 @@ async function setCurrentGame(gameId) {
 
 const newTitle = ref('');
 const newMaxPlayers = ref('');
-const newPlatform = ref('');
+const availablePlatforms = [
+  'Game Pass PC',
+  'Game Pass Essential',
+  'Game Pass Premium',
+  'Game Pass Ultimate',
+  'EA Play',
+  'EA Play Pro'
+];
+const newPlatforms = ref([]);
 const addMsg = ref('');
 const showAddGame = ref(false);
 
@@ -215,12 +232,12 @@ async function onAddGame() {
     await addGame({
       title,
       maxPlayers,
-      platforms: newPlatform.value ? [newPlatform.value] : [],
+      platforms: Array.isArray(newPlatforms.value) ? newPlatforms.value : [],
     });
     addMsg.value = 'Game added!';
     newTitle.value = '';
     newMaxPlayers.value = '';
-    newPlatform.value = '';
+    newPlatforms.value = [];
     showAddGame.value = false;
   } catch (e) {
     addMsg.value = e.message || 'Error adding game.';
@@ -232,7 +249,7 @@ function cancelAddGame() {
   addMsg.value = '';
   newTitle.value = '';
   newMaxPlayers.value = '';
-  newPlatform.value = '';
+  newPlatforms.value = [];
 }
 
 
@@ -292,6 +309,22 @@ const sortedGames = computed(() => {
 
 
 <style scoped>
+  .platform-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    margin-top: 0.5em;
+  }
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.3em;
+    font-weight: normal;
+    background: #232a3b;
+    padding: 0.2em 0.6em;
+    border-radius: 0.5em;
+    color: #a5b4fc;
+  }
 .pill-green {
   background: #22c55e;
   color: #fff;
